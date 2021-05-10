@@ -30,8 +30,9 @@ class WeatherRecord extends Model
                 'appid' => $apiKey,
                 'units' => 'metric',
                 'lang' => 'pl'
-            ]);
-            
+            ]);          
+            if ($cityWeather['cod'] == '404') return false;
+
             $weatherRecord = new WeatherRecord();
             $weatherRecord->owm_id = $cityWeather['id'];
             $weatherRecord->city = $cityWeather['name'];
@@ -44,6 +45,7 @@ class WeatherRecord extends Model
             $weatherRecord->humidity = $cityWeather['main']['humidity'];
             $weatherRecord->wind_speed = $cityWeather['wind']['speed'];
             $weatherRecord->save();
-        }       
+        }     
+        return true;
     }
 }

@@ -14,3 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', 'Controller@index');
+
+Route::post('/addCity', 'Controller@addCity');
+
+Route::post('/delete', 'Controller@delete');
