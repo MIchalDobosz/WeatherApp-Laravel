@@ -6,35 +6,112 @@
         <title>Pogoda</title>
     </head>
     <body class="antialiased">
-        <h1> Pogoda </h1>
-        <br>
-
-        @foreach ($weatherRecords as $weatherRecord)
+        <div>
             <div>
-                <h2> Miasto: {{ $weatherRecord->city }} </h2>
-                <h3> Pogoda: {{ $weatherRecord->description }} </h3>
-                <h4> Temperatura: {{ $weatherRecord->temp }}°C </h4>
-                <form action="/delete" method="post">
-                    @csrf
-                    <input type="text" name="cityName" value="{{ $weatherRecord->city }}" hidden>
-                    <input type="submit" value="Usuń">
-                </form>
-            </div> 
-            <br>
-        @endforeach
-
-        @if (count($weatherRecords) < 10)
-            <br>
-            <div>
-                <h2> Obserwuj nowe miasto: </h2>
-                <form action="/addCity" method="post">
-                    @csrf
-                    <label id="cityNameLabel" for="cityNameInput">Miasto:</label>
-                    <input id="cityNameInput" type="text" name="cityName" required>
-                    <input type="submit" value="Dodaj">
-                </form>
-                {{ $errors->first() }}
+                <h1> Pogoda </h1>
             </div>
-        @endif
+            <br>
+
+            @php
+                $i = 0;
+            @endphp
+            @foreach ($currentWeatherRecords as $currentWeatherRecord)
+                <div>
+                    <h2> Miasto: {{ $currentWeatherRecord->city }} </h2>
+                    <h3> Pogoda: {{ $currentWeatherRecord->description }} </h3>
+                    <h4> Temperatura: {{ $currentWeatherRecord->temp_current }}°C </h4>
+                    <form action="/delete" method="post">
+                        @csrf
+                        <input type="text" name="cityName" value="{{ $currentWeatherRecord->city }}" hidden>
+                        <input type="submit" value="Usuń">
+                    </form>
+                    <button id="showMoreButton{{ $currentWeatherRecord->id }}" onclick="showDetails({{ $currentWeatherRecord->id }})">Pokaż więcej</button>
+                    <div id="showMoreDiv{{ $currentWeatherRecord->id }}" style="display: none;">
+                        <div id="dailyForecastDayDiv{{ $currentWeatherRecord->id }}">
+                            <table>
+                                <thead>
+                                    <td> <b>Data</b> </td>
+                                    <td> <b>Pogoda </td>
+                                    <td> <b>Temperatura </td>
+                                </thead>
+                                <tbody>
+                                    @foreach ($dailyWeatherRecords[$i] as $dailyWeatherRecord)
+                                        @if ($dailyWeatherRecord->city == $currentWeatherRecord->city)
+                                        <tr>
+                                            <td> {{ Carbon\Carbon::parse($dailyWeatherRecord->dt)->format('d-m-Y') }} </td>
+                                            <td> {{ $dailyWeatherRecord->description }} </td>
+                                            <td> {{ $dailyWeatherRecord->temp_day }} </td>
+                                        </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="dailyForecastNightDiv{{ $currentWeatherRecord->id }}" style="display: none;">
+                            <table>
+                                <thead>
+                                    <td> <b>Data</b> </td>
+                                    <td> <b>Pogoda </td>
+                                    <td> <b>Temperatura </td>
+                                </thead>
+                                <tbody>
+                                    @foreach ($dailyWeatherRecords[$i] as $dailyWeatherRecord)
+                                        @if ($dailyWeatherRecord->city == $currentWeatherRecord->city)
+                                        <tr>
+                                            <td> {{ Carbon\Carbon::parse($dailyWeatherRecord->dt)->format('d-m-Y') }} </td>
+                                            <td> {{ $dailyWeatherRecord->description }} </td>
+                                            <td> {{ $dailyWeatherRecord->temp_night }} </td>
+                                        </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="hourlyForecastDiv{{ $currentWeatherRecord->id }}" style="display: none;">
+                            <table>
+                                <thead>
+                                    <td> <b>Godzina</b> </td>
+                                    <td> <b>Pogoda</b> </td>
+                                    <td> <b>Temperatura</b> </td>
+                                </thead>
+                                <tbody>
+                                    @foreach ($hourlyWeatherRecords[$i] as $hourlyWeatherRecord)
+                                        @if ($hourlyWeatherRecord->city == $hourlyWeatherRecord->city)
+                                        <tr>
+                                            <td> {{ Carbon\Carbon::parse($hourlyWeatherRecord->dt)->format('H:i:s') }} </td>
+                                            <td> {{ $hourlyWeatherRecord->description }} </td>
+                                            <td> {{ $hourlyWeatherRecord->temp_current }} </td>
+                                        </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <button id="dailyForecastDayButton{{ $currentWeatherRecord->id }}" onclick="showDailyForecastDay({{ $currentWeatherRecord->id }})">Prognoza na tydzień (dzień)</button>
+                        <button id="dailyForecastNightButton{{ $currentWeatherRecord->id }}" onclick="showDailyForecastNight({{ $currentWeatherRecord->id }})">Prognoza na tydzień (noc)</button>
+                        <button id="hourlyForecastButton{{ $currentWeatherRecord->id }}" onclick="showHourlyForecast({{ $currentWeatherRecord->id }})">Prognoza na 24 godziny</button>
+                    </div>
+                </div> 
+                <br>
+                @php
+                    $i++;
+                @endphp
+            @endforeach
+
+            @if (count($currentWeatherRecords) < 10)
+                <br>
+                <div>
+                    <h2> Obserwuj nowe miasto: </h2>
+                    <form action="/addCity" method="post">
+                        @csrf
+                        <label id="cityNameLabel" for="cityNameInput">Miasto:</label>
+                        <input id="cityNameInput" type="text" name="cityName" required>
+                        <input type="submit" value="Dodaj">
+                    </form>
+                    {{ $errors->first() }}
+                </div>
+            @endif
+        </div>
+        <script src="js/script.js"></script>
     </body>
 </html>

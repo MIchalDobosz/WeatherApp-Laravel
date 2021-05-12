@@ -16,9 +16,12 @@ class City extends Model
 
 
     public static function saveCityFromForm($cityName): bool {
+        //TODO: ??jeśli było już w bazie i zostało zaktualizowane niedawno, nie aktualizować??
         $city = new City();
         $city->name = $cityName;
-        if (WeatherRecord::saveRecordsFromApi([$city]) == true) {
+        $weatherRecord = WeatherRecord::saveRecordsFromApi([$city]);
+        if ($weatherRecord != null) {
+            $city->name = $weatherRecord->city;
             $city->save();
             return true;
         } else return false;
