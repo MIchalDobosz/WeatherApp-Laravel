@@ -27,6 +27,13 @@
                     </form>
                     <button id="showMoreButton{{ $currentWeatherRecord->id }}" onclick="showDetails({{ $currentWeatherRecord->id }})">Pokaż więcej</button>
                     <div id="showMoreDiv{{ $currentWeatherRecord->id }}" style="display: none;">
+                        <h4> Temperatura odczuwalna: {{ $currentWeatherRecord->feels_like_current }}°C </h4>
+                        <h4> Ciśnienie: {{ $currentWeatherRecord->pressure }}hPa </h4>
+                        <h4> Wilgotność: {{ $currentWeatherRecord->humidity }}% </h4>
+                        <h4> Wiatr: {{ $currentWeatherRecord->temp_current }}m/s </h4>
+                        <button id="dailyForecastDayButton{{ $currentWeatherRecord->id }}" onclick="showDailyForecastDay({{ $currentWeatherRecord->id }})">Prognoza na tydzień (dzień)</button>
+                        <button id="dailyForecastNightButton{{ $currentWeatherRecord->id }}" onclick="showDailyForecastNight({{ $currentWeatherRecord->id }})">Prognoza na tydzień (noc)</button>
+                        <button id="hourlyForecastButton{{ $currentWeatherRecord->id }}" onclick="showHourlyForecast({{ $currentWeatherRecord->id }})">Prognoza na 24 godziny</button>
                         <div id="dailyForecastDayDiv{{ $currentWeatherRecord->id }}">
                             <table>
                                 <thead>
@@ -87,11 +94,9 @@
                                 </tbody>
                             </table>
                         </div>
-                        <button id="dailyForecastDayButton{{ $currentWeatherRecord->id }}" onclick="showDailyForecastDay({{ $currentWeatherRecord->id }})">Prognoza na tydzień (dzień)</button>
-                        <button id="dailyForecastNightButton{{ $currentWeatherRecord->id }}" onclick="showDailyForecastNight({{ $currentWeatherRecord->id }})">Prognoza na tydzień (noc)</button>
-                        <button id="hourlyForecastButton{{ $currentWeatherRecord->id }}" onclick="showHourlyForecast({{ $currentWeatherRecord->id }})">Prognoza na 24 godziny</button>
                     </div>
                 </div> 
+                <br>
                 <br>
                 @php
                     $i++;
