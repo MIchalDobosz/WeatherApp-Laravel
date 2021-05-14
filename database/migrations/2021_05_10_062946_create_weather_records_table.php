@@ -32,6 +32,7 @@ class CreateWeatherRecordsTable extends Migration
             $table->integer('pressure');
             $table->integer('humidity');
             $table->float('wind_speed');
+            $table->float('rain');
             $table->string('type');
             $table->Timestamps();
         });

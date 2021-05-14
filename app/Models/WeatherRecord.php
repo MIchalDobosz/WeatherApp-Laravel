@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
-
+use Mockery\Undefined;
 
 class WeatherRecord extends Model
 {
@@ -26,6 +26,10 @@ class WeatherRecord extends Model
 
         foreach ($cities as $city) {
 
+            if (($matchingRecords = WeatherRecord::where('city', $city->name))->exists()) {
+                $matchingRecords->delete();
+            } 
+            
             //current
             $currentApiResponse = Http::get('api.openweathermap.org/data/2.5/weather', [
                 'q' => $city->name,
@@ -49,6 +53,8 @@ class WeatherRecord extends Model
             $currentWeatherRecord->pressure = $currentApiResponse['main']['pressure'];
             $currentWeatherRecord->humidity = $currentApiResponse['main']['humidity'];
             $currentWeatherRecord->wind_speed = $currentApiResponse['wind']['speed'];
+            if (isset($currentApiResponse['rain']['1h'])) $currentWeatherRecord->rain = $currentApiResponse['rain']['1h'];
+            else $currentWeatherRecord->rain = 0;
             $currentWeatherRecord->type = 'current';
             $currentWeatherRecord->save();
 
@@ -64,7 +70,7 @@ class WeatherRecord extends Model
             ]);
 
             //daily
-            for($i=1; $i<=7; $i++) { //mozliwe i=1
+            for($i=0; $i<=7; $i++) { //mozliwe i=1
                 $forecastWeatherRecord = new WeatherRecord();
                 $forecastWeatherRecord->owm_id = $currentWeatherRecord->owm_id;
                 $forecastWeatherRecord->lat = $currentWeatherRecord->lat;
@@ -81,12 +87,14 @@ class WeatherRecord extends Model
                 $forecastWeatherRecord->pressure = $forecastApiResponse['daily'][$i]['pressure'];
                 $forecastWeatherRecord->humidity = $forecastApiResponse['daily'][$i]['humidity'];
                 $forecastWeatherRecord->wind_speed = $forecastApiResponse['daily'][$i]['wind_speed'];
+                if (isset($forecastApiResponse['daily'][$i]['rain'])) $forecastWeatherRecord->rain = $forecastApiResponse['daily'][$i]['rain'];
+                else $forecastWeatherRecord->rain = 0;
                 $forecastWeatherRecord->type = 'daily';
                 $forecastWeatherRecord->save();
             }
 
             //hourly
-            for($i=1; $i<=24; $i++) {
+            for($i=0; $i<=24; $i++) {
                 $forecastWeatherRecord = new WeatherRecord();
                 $forecastWeatherRecord->owm_id = $currentWeatherRecord->owm_id;
                 $forecastWeatherRecord->lat = $currentWeatherRecord->lat;
@@ -101,6 +109,8 @@ class WeatherRecord extends Model
                 $forecastWeatherRecord->pressure = $forecastApiResponse['hourly'][$i]['pressure'];
                 $forecastWeatherRecord->humidity = $forecastApiResponse['hourly'][$i]['humidity'];
                 $forecastWeatherRecord->wind_speed = $forecastApiResponse['hourly'][$i]['wind_speed'];
+                if (isset($forecastApiResponse['hourly'][$i]['rain']['1h'])) $forecastWeatherRecord->rain = $forecastApiResponse['hourly'][$i]['rain']['1h'];
+                else $forecastWeatherRecord->rain = 0;
                 $forecastWeatherRecord->type = 'hourly';
                 $forecastWeatherRecord->save();
             }

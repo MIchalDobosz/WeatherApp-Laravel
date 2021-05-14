@@ -18,5 +18,3 @@ Route::get('/', 'Controller@index');
 Route::post('/addCity', 'Controller@addCity');
 
 Route::post('/delete', 'Controller@delete');
-
-Route::get('/test', 'Controller@test');

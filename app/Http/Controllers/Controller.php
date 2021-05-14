@@ -5,13 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\City;
 use App\Models\WeatherRecord;
 use App\Rules\CityAlreadyExists;
+use Chartisan\PHP\Chartisan;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\MessageBag;
 
 class Controller extends BaseController
@@ -25,32 +25,77 @@ class Controller extends BaseController
         $currentWeatherRecords = [];
         $dailyWeatherRecords = [];
         $hourlyWeatherRecords = [];
-
+        $dailyLabels = [];
+        $dailyTemps = [];
+        $dailyCharts = [];
+        $hourlyLabels = [];
+        $hourlyTemps = [];
+        $hourlyCharts = [];
+        $dailyRains = [];
+        $dailyRainCharts = [];
+        $hourlyRains = [];
+        $hourlyRainCharts = [];
+        
+        $i = 0;
         foreach ($cities as $city) {
+
+            //current
             $currentWeatherRecords[] = WeatherRecord::where([
                 ['city', $city->name], 
                 ['type', 'current']
             ])->orderByDesc('dt')->first();
 
+
+            //daily
             $dailyWeatherRecords[] = WeatherRecord::where([
                 ['city', $city->name], 
                 ['type', 'daily'],
-                ['dt', '>=', Carbon::tomorrow()->toDateTime()],
-                ['dt', '<=', Carbon::now()->addDays(7)->toDateTime()]
-            ])->orderByDesc('created_at')->orderBy('dt')->take(7)->get();
+            ])->orderByDesc('created_at')->orderBy('dt')->take(8)->get();
 
+            $tempLabels = [];
+            $tempTemps = [];
+            $tempRains = [];
+            foreach ($dailyWeatherRecords[$i] as $dailyWeatherRecord) {
+                $tempLabels[] = Carbon::parse($dailyWeatherRecord->dt)->format('d-m');
+                $tempTemps[] = $dailyWeatherRecord->temp_day;
+                $tempRains[] = $dailyWeatherRecord->rain;
+            }
+            $dailyLabels[] = $tempLabels;
+            $dailyTemps[] = $tempTemps;
+            $dailyRains[] = $tempRains;
+            $dailyCharts[] = Chartisan::build()->labels($dailyLabels[$i])->dataset('Temperatura', $dailyTemps[$i])->toJSON();
+            $dailyRainCharts[] = Chartisan::build()->labels($dailyLabels[$i])->dataset('Opady', $dailyRains[$i])->toJSON();
+            
+            //hourly
             $hourlyWeatherRecords[] = WeatherRecord::where([
                 ['city', $city->name], 
                 ['type', 'hourly'],
-                ['dt', '>', Carbon::now()->toDateTime()],
-                ['dt', '<=', Carbon::now()->addHours(24)->toDateTime()]
-            ])->orderByDesc('created_at')->orderBy('dt')->take(24)->get();
+            ])->orderByDesc('created_at')->orderBy('dt')->take(25)->get();
+
+            $tempLabels = [];
+            $tempTemps = [];
+            $tempRains = [];
+            foreach ($hourlyWeatherRecords[$i] as $hourlyWeatherRecord) {
+                $tempLabels[] = Carbon::parse($hourlyWeatherRecord->dt)->addHours(2)->format('H:i');
+                $tempTemps[] = $hourlyWeatherRecord->temp_current;
+                $tempRains[] = $hourlyWeatherRecord->rain;
+            }
+            $hourlyLabels[] = $tempLabels;
+            $hourlyTemps[] = $tempTemps;
+            $hourlyRains[] = $tempRains;
+            $hourlyCharts[] = Chartisan::build()->labels($hourlyLabels[$i])->dataset('Temperatura', $hourlyTemps[$i])->toJSON();
+            $hourlyRainCharts[] = Chartisan::build()->labels($hourlyLabels[$i])->dataset('Opady', $hourlyRains[$i])->toJSON();
+
+            $i++;
         }
-
-        //dd($currentWeatherRecords);
-        //dd($dailyWeatherRecords);
-
-        return view('weather', ['currentWeatherRecords' => $currentWeatherRecords, 'dailyWeatherRecords' => $dailyWeatherRecords, 'hourlyWeatherRecords' => $hourlyWeatherRecords]);
+    
+        return view('weather', [
+            'currentWeatherRecords' => $currentWeatherRecords,
+            'dailyCharts' => $dailyCharts,
+            'hourlyCharts' => $hourlyCharts,
+            'dailyRainCharts' =>$dailyRainCharts,
+            'hourlyRainCharts' =>$hourlyRainCharts
+        ]);
     }
 
     public function addCity(MessageBag $messageBag, Request $request) {
@@ -70,24 +115,7 @@ class Controller extends BaseController
 
         $city = City::where('name', $request->input('cityName'))->first();
         City::destroy($city->id);
+        WeatherRecord::where('city', $city->name)->delete();
         return redirect('/');
-    }
-
-    public function test() {
-
-        $apiKey = '4e61a45d24090011fc4cf874bd943d99';
-        $cityWeather = "";
-
-        $cityWeather = Http::get('api.openweathermap.org/data/2.5/onecall', [
-            'lat' => '52.2298',
-            'lon' => '21.0118',
-            'exclude' => 'current,alerts',
-            'appid' => $apiKey,
-            'units' => 'metric',
-            'lang' => 'pl'
-        ])->json(); 
-
-        dd($cityWeather);
-        //return $cityWeather;
     }
 }

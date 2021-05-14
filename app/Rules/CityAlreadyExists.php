@@ -36,6 +36,6 @@ class CityAlreadyExists implements Rule
      */
     public function message()
     {
-        return 'Miasto znajduje się już na liście';
+        return 'Miasto już na liście';
     }
 }
