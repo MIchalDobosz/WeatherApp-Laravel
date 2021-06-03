@@ -1,1 +1,1 @@
-# SiecKin
+# Aplikacja pogodowa
