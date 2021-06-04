@@ -20,7 +20,7 @@ class WeatherRecord extends Model
         if ($cities == null) {
             $cities = City::All();
         }
-        $apiKey = '4e61a45d24090011fc4cf874bd943d99';
+        $apiKey = '#########################';
         $currentApiResponse = "";
         $forecastApiResponse = "";
 
